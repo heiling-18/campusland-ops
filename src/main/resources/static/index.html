@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- MANDATORY: Declare support for both light and dark themes -->
+    <meta name="color-scheme" content="dark">
+    <script>
+        try {
+            document.querySelector('meta[name="color-scheme"]').content = localStorage.getItem("color-scheme") ?? "dark";
+        } catch (e) {}
+    </script>
+    <title>Campusland Ops — Sistema de Gestión Operativa</title>
+    <link rel="icon" type="image/png" href="img/campuslands-logo.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="min-h-screen bg-slate-50 text-slate-900">
+
+    <!-- NOTIFICACION TOAST CORPORATIVA (SVG) -->
+    <div id="toastNotification" class="hidden" role="status" aria-live="polite"></div>
+
+    <div id="globalLoading" class="hidden fixed inset-0 z-[90] bg-slate-950/50 backdrop-blur-[2px] flex items-center justify-center" role="status" aria-live="polite" aria-busy="false">
+        <div class="bg-white border border-slate-200 rounded-2xl shadow-2xl px-6 py-5 flex items-center gap-3 max-w-sm">
+            <span class="inline-block w-5 h-5 rounded-full border-2 border-blue-600 border-t-transparent animate-spin shrink-0"></span>
+            <p id="globalLoadingLabel" class="text-sm font-semibold text-slate-800">Procesando operación...</p>
+        </div>
+    </div>
+
+    <!-- =============================================================== -->
+    <!-- PANTALLA DE AUTENTICACION CORPORATIVA: CAMPUSLAND OPS           -->
+    <!-- =============================================================== -->
+    <div id="loginView" class="min-h-screen grid grid-cols-1 lg:grid-cols-12 bg-white relative">
+        <!-- Boton Flotante de Cambio de Tema en Login -->
+        <button type="button" data-theme-toggle
+                class="fixed top-5 right-5 z-40 inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white border border-slate-200 shadow-lg text-xs font-semibold text-slate-800 hover:border-blue-500 transition">
+            <svg class="w-4 h-4 text-amber-400 theme-icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+            </svg>
+            <svg class="w-4 h-4 text-blue-600 theme-icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+            </svg>
+            <span class="theme-label-dark">Modo Claro</span>
+            <span class="theme-label-light">Modo Oscuro</span>
+        </button>
+
+        <!-- Panel Izquierdo de Identidad Institucional -->
+        <div class="hidden lg:flex lg:col-span-5 bg-slate-950 text-white p-12 flex-col justify-between border-r border-slate-800/80 relative overflow-hidden">
+            <div class="absolute -top-24 -left-24 w-96 h-96 rounded-full bg-blue-600/20 blur-3xl pointer-events-none"></div>
+            <div class="absolute -bottom-24 -right-24 w-96 h-96 rounded-full bg-cyan-500/15 blur-3xl pointer-events-none"></div>
+            <div class="relative z-10">
+                <div class="flex items-center gap-3.5">
+                    <div class="w-12 h-12 rounded-xl bg-white p-1.5 flex items-center justify-center shadow-lg shadow-blue-600/30">
+                        <img src="img/campuslands-logo.png" alt="Campusland Ops" class="w-full h-full object-contain">
+                    </div>
+                    <div>
+                        <span class="text-lg font-extrabold tracking-tight">Campusland Ops</span>
+                        <span class="block text-xs text-cyan-400 font-medium">Command & Operations Center</span>
+                    </div>
+                </div>
+
+                <div class="mt-16 space-y-6">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-400/20 text-cyan-300 text-xs font-semibold">
+                        <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+                        <span>Monitoreo Operativo en Tiempo Real</span>
+                    </div>
+                    <h1 class="text-3xl font-extrabold leading-tight text-white">
+                        Control inteligente de espacios, aforo e inventario del campus.
+                    </h1>
+                    <p class="text-sm text-slate-300 leading-relaxed">
+                        Plataforma centralizada para la programación horaria sin cruces, trazabilidad de estaciones de trabajo, préstamos de equipos y atención priorizada de incidentes.
+                    </p>
+
+                    <div class="pt-4 space-y-4 border-t border-slate-800/90 text-xs text-slate-300">
+                        <div class="flex items-start gap-3 p-3 rounded-xl bg-slate-900/70 border border-slate-800">
+                            <svg class="w-4 h-4 text-cyan-400 shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22v-4h6v4"/>
+                            </svg>
+                            <div>
+                                <p class="font-semibold text-white">Control de Capacidad Instalada</p>
+                                <p class="text-slate-400">10 espacios monitoreados en tiempo real con reglas de ocupación y validación horaria.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-3 p-3 rounded-xl bg-slate-900/70 border border-slate-800">
+                            <svg class="w-4 h-4 text-cyan-400 shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/>
+                            </svg>
+                            <div>
+                                <p class="font-semibold text-white">Trazabilidad de Inventario y Préstamos</p>
+                                <p class="text-slate-400">Control por serial de estaciones en Spooki, Apolo y Artemis, pantallas y préstamos individuales.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-3 p-3 rounded-xl bg-slate-900/70 border border-slate-800">
+                            <svg class="w-4 h-4 text-cyan-400 shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 3l1.912 5.813a2 2 0 001.275 1.275L21 12l-5.813 1.912a2 2 0 00-1.275 1.275L12 21l-1.912-5.813a2 2 0 00-1.275-1.275L3 12l5.813-1.912a2 2 0 001.275-1.275L12 3z"/>
+                            </svg>
+                            <div>
+                                <p class="font-semibold text-white">Asistencia Operativa Inteligente</p>
+                                <p class="text-slate-400">Priorización automática de reportes de daños, bloqueo preventivo y reubicación de grupos.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="relative z-10 text-xs text-slate-400 flex items-center justify-between border-t border-slate-800 pt-6">
+                <span>Campusland Ops</span>
+                <span>Gestión de Espacios y Recursos</span>
+            </div>
+        </div>
+
+        <!-- Panel Derecho de Formulario de Acceso -->
+        <div class="lg:col-span-7 flex items-center justify-center p-6 sm:p-12 bg-slate-50">
+            <div class="w-full max-w-md bg-white border border-slate-200 rounded-2xl shadow-xl p-8">
+                <div class="mb-6">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-11 h-11 rounded-xl bg-white border border-slate-200 p-1.5 flex items-center justify-center shadow-sm">
+                            <img src="img/campuslands-logo.png" alt="Campusland Ops" class="w-full h-full object-contain">
+                        </div>
+                        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-xs font-semibold">
+                            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                            </svg>
+                            <span>Acceso Institucional</span>
+                        </div>
+                    </div>
+                    <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">Campusland Ops</h2>
+                    <p class="text-xs text-slate-500 mt-1">Ingresa tus credenciales para acceder a los módulos asignados a tu perfil.</p>
+                </div>
+
+                <form id="loginForm" class="space-y-4">
+                    <div>
+                        <label for="loginCorreo" class="block text-xs font-semibold text-slate-700 mb-1">
+                            Correo Institucional <span class="text-red-600">*</span>
+                        </label>
+                        <input type="email" id="loginCorreo" required aria-errormessage="loginCorreoError"
+                               placeholder="nombre@campuslands.com"
+                               class="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-300 text-sm text-slate-900 focus:outline-none focus:border-blue-600">
+                        <div id="loginCorreoError" class="field-error-msg">
+                            <svg class="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                            <span>Ingresa un correo institucional válido.</span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="loginPassword" class="block text-xs font-semibold text-slate-700 mb-1">
+                            Contraseña <span class="text-red-600">*</span>
+                        </label>
+                        <input type="password" id="loginPassword" required aria-errormessage="loginPassError"
+                               placeholder="••••••••"
+                               class="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-300 text-sm text-slate-900 focus:outline-none focus:border-blue-600">
+                        <div id="loginPassError" class="field-error-msg">
+                            <svg class="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                            <span>La contraseña es requerida.</span>
+                        </div>
+                    </div>
+
+                    <button type="submit"
+                            class="w-full py-3 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-sm transition flex items-center justify-center gap-2">
+                        <span>Iniciar Sesión</span>
+                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+                        </svg>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- =============================================================== -->
+    <!-- WORKSPACE PRINCIPAL CON SIDEBAR MODULAR POR FUNCIONES           -->
+    <!-- =============================================================== -->
+    <div id="appView" class="hidden min-h-screen flex flex-col lg:flex-row">
+
+        <!-- BARRA LATERAL DE NAVEGACION POR MODULOS -->
+        <aside class="w-full lg:w-64 bg-white border-b lg:border-b-0 lg:border-r border-slate-200 flex flex-col justify-between shrink-0">
+            <div class="p-5">
+                <!-- Branding + Boton Tema Oscuro/Claro -->
+                <div class="flex items-center justify-between gap-2 pb-5 border-b border-slate-100">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-white p-1 border border-slate-200 flex items-center justify-center shadow-md shadow-blue-600/20">
+                            <img src="img/campuslands-logo.png" alt="Campusland Ops" class="w-full h-full object-contain">
+                        </div>
+                        <div>
+                            <span class="font-extrabold text-slate-900 text-sm block leading-none">Campusland Ops</span>
+                            <span class="text-[11px] text-slate-500 font-medium">Gestión Operativa</span>
+                        </div>
+                    </div>
+                    <button type="button" data-theme-toggle title="Alternar modo oscuro / claro"
+                            class="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 transition">
+                        <svg class="w-4 h-4 text-amber-400 theme-icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                        </svg>
+                        <svg class="w-4 h-4 text-blue-600 theme-icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Menu Modular -->
+                <nav class="mt-5 space-y-1.5">
+                    <p class="px-3 text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">Módulos Operativos</p>
+
+                    <button type="button" class="nav-item active" data-view="viewEspacios">
+                        <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22v-4h6v4"/>
+                        </svg>
+                        <span>Espacios y Aforo</span>
+                    </button>
+
+                    <button type="button" id="navReservas" class="nav-item" data-view="viewReservas">
+                        <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+                        </svg>
+                        <span>Reservas y Horarios</span>
+                    </button>
+
+                    <button type="button" id="navAdmin" class="nav-item hidden" data-view="viewAdmin">
+                        <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                        </svg>
+                        <span>Solicitudes y Salones</span>
+                    </button>
+
+                    <button type="button" id="navSoporte" class="nav-item hidden" data-view="viewSoporte">
+                        <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/>
+                        </svg>
+                        <span>Inventario y Triaje</span>
+                    </button>
+
+                    <button type="button" id="navCamper" class="nav-item hidden" data-view="viewCamper">
+                        <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="2" y="3" width="20" height="14" rx="2"/><line x1="2" y1="20" x2="22" y2="20"/>
+                        </svg>
+                        <span>Préstamo de Equipos</span>
+                    </button>
+
+                    <div class="pt-4 mt-4 border-t border-slate-100">
+                        <p class="px-3 text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">Inteligencia Artificial</p>
+                        <button type="button" class="nav-item" data-view="viewIa">
+                            <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 3l1.912 5.813a2 2 0 001.275 1.275L21 12l-5.813 1.912a2 2 0 00-1.275 1.275L12 21l-1.912-5.813a2 2 0 00-1.275-1.275L3 12l5.813-1.912a2 2 0 001.275-1.275L12 3z"/>
+                            </svg>
+                            <span>Incidencias y Copiloto IA</span>
+                        </button>
+                    </div>
+                </nav>
+            </div>
+
+            <!-- Informacion del Usuario Activo -->
+            <div class="p-4 border-t border-slate-200 bg-slate-50">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="truncate">
+                        <p id="headerUserName" class="text-xs font-bold text-slate-900 truncate"></p>
+                        <p id="headerUserEmail" class="text-[11px] text-slate-500 truncate"></p>
+                    </div>
+                    <span id="headerRoleBadge" class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-900 text-white"></span>
+                </div>
+                <div class="flex gap-2">
+                    <button type="button" id="btnRefrescarDatos"
+                            class="flex-1 inline-flex items-center justify-center gap-1.5 py-1.5 px-2.5 rounded-lg bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-semibold">
+                        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/>
+                        </svg>
+                        <span>Sincronizar</span>
+                    </button>
+                    <button type="button" id="btnCerrarSesion"
+                            class="inline-flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 text-xs font-semibold">
+                        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+                        </svg>
+                        <span>Salir</span>
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- AREA DE CONTENIDO PRINCIPAL -->
+        <main class="flex-1 p-6 lg:p-8 max-w-7xl w-full mx-auto space-y-6">
+
+            <!-- KPIs DE ESTADO OPERATIVO (EXCLUSIVO ADMINISTRADOR) -->
+            <div id="kpiRowAdmin" class="hidden grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                    <span class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Espacios Visibles</span>
+                    <p id="kpiTotalSalones" class="text-2xl font-bold text-slate-900 mt-1">0</p>
+                </div>
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                    <span class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Habilitados</span>
+                    <p id="kpiSalonesDisponibles" class="text-2xl font-bold text-emerald-600 mt-1">0</p>
+                </div>
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                    <span class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Bloqueados</span>
+                    <p id="kpiSalonesBloqueados" class="text-2xl font-bold text-red-600 mt-1">0</p>
+                </div>
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                    <span class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Capacidad Total</span>
+                    <p id="kpiAforoInstalado" class="text-2xl font-bold text-blue-600 mt-1">0 puestos</p>
+                </div>
+            </div>
+
+            <!-- =========================================================== -->
+            <!-- VISTA 1: CAPACIDAD INSTALADA Y ESPACIOS                     -->
+            <!-- =========================================================== -->
+            <section id="viewEspacios" class="workspace-view space-y-4">
+                <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                    <div class="mb-5">
+                        <h2 class="text-lg font-bold text-slate-900">Capacidad Instalada y Estado de Espacios</h2>
+                        <p class="text-xs text-slate-500 mt-0.5">
+                            Monitoreo de aforo máximo, disponibilidad operativa e inventario tecnológico asignado a cada espacio.
+                        </p>
+                    </div>
+                    <div id="gridSalones" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+                </div>
+            </section>
+
+            <!-- =========================================================== -->
+            <!-- VISTA 2: RESERVAS POR HORARIO Y REUBICACION IA              -->
+            <!-- =========================================================== -->
+            <section id="viewReservas" class="workspace-view hidden space-y-6">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    <!-- Formulario de Reserva -->
+                    <div class="lg:col-span-5 bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+                        <h3 class="text-base font-bold text-slate-900">Programación de Espacios por Horario</h3>
+                        <p id="subtituloFormReserva" class="text-xs text-slate-500 mt-1 mb-4"></p>
+
+                        <!-- Recomendador IA para Trainer -->
+                        <div id="cajaRecomendadorTrainerIa" class="hidden mb-4 p-4 rounded-xl bg-blue-50/70 border border-blue-200">
+                            <div class="flex items-center justify-between gap-2 mb-1.5">
+                                <span class="text-xs font-bold text-blue-900">Recomendador Inteligente de Salón (IA)</span>
+                                <button type="button" id="btnRecomendarSalonIa"
+                                        class="px-3 py-1 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold">
+                                    Calcular Salón Óptimo
+                                </button>
+                            </div>
+                            <p id="textoRecomendacionTrainerIa" class="text-xs text-blue-800 leading-relaxed">
+                                Define la fecha, horario y número de asistentes abajo y pulsa "Calcular Salón Óptimo" para asignar el aula con mejor eficiencia de aforo.
+                            </p>
+                        </div>
+
+                        <form id="formReserva" class="space-y-4">
+                            <div>
+                                <label for="reservaEspacioId" class="block text-xs font-semibold text-slate-700 mb-1">
+                                    Espacio Solicitado <span class="text-red-600">*</span>
+                                </label>
+                                <select id="reservaEspacioId" required
+                                        class="w-full px-3 py-2 rounded-lg bg-white border border-slate-300 text-sm text-slate-900"></select>
+                            </div>
+
+                            <!-- Vista de Implementos del Salon -->
+                            <div id="infoImplementosReserva" class="p-3 rounded-lg bg-slate-50 border border-slate-200 text-xs"></div>
+
+                            <div class="grid grid-cols-3 gap-2.5">
+                                <div>
+                                    <label for="reservaFecha" class="block text-xs font-semibold text-slate-700 mb-1">Fecha <span class="text-red-600">*</span></label>
+                                    <input type="date" id="reservaFecha" required
+                                           class="w-full px-2.5 py-2 rounded-lg bg-white border border-slate-300 text-xs">
+                                </div>
+                                <div>
+                                    <label for="reservaHoraInicio" class="block text-xs font-semibold text-slate-700 mb-1">Inicio <span class="text-red-600">*</span></label>
+                                    <input type="time" id="reservaHoraInicio" value="08:00" required
+                                           class="w-full px-2.5 py-2 rounded-lg bg-white border border-slate-300 text-xs">
+                                </div>
+                                <div>
+                                    <label for="reservaHoraFin" class="block text-xs font-semibold text-slate-700 mb-1">Fin <span class="text-red-600">*</span></label>
+                                    <input type="time" id="reservaHoraFin" value="10:00" required
+                                           class="w-full px-2.5 py-2 rounded-lg bg-white border border-slate-300 text-xs">
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label for="reservaAsistentes" class="block text-xs font-semibold text-slate-700 mb-1">
+                                        Asistentes <span class="text-red-600">*</span>
+                                    </label>
+                                    <input type="number" id="reservaAsistentes" required min="1" value="6"
+                                           class="w-full px-3 py-2 rounded-lg bg-white border border-slate-300 text-sm">
+                                    <div class="field-error-msg">Ingresa un número válido de asistentes.</div>
+                                </div>
+                                <div>
+                                    <label for="reservaMotivo" class="block text-xs font-semibold text-slate-700 mb-1">
+                                        Motivo Académico <span class="text-red-600">*</span>
+                                    </label>
+                                    <input type="text" id="reservaMotivo" required placeholder="Ej. Entrenamiento Backend"
+                                           class="w-full px-3 py-2 rounded-lg bg-white border border-slate-300 text-sm">
+                                    <div class="field-error-msg">Especifica el motivo de la reserva.</div>
+                                </div>
+                            </div>
+
+                            <button type="submit"
+                                    class="w-full py-2.5 px-4 rounded-lg bg-slate-900 hover:bg-slate-800 text-white font-semibold text-sm transition">
+                                Registrar Reserva / Solicitud
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Listado de Reservas Activas -->
+                    <div class="lg:col-span-7 bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+                        <h3 class="text-base font-bold text-slate-900">Registro de Reservas y Bloques Horarios</h3>
+                        <p class="text-xs text-slate-500 mt-1 mb-4">
+                            Control de ocupación por fecha y hora. Los Trainers pueden activar la reubicación inteligente con IA en caso de falla técnica en el salón.
+                        </p>
+                        <div id="listaReservasGeneral" class="space-y-3 max-h-[500px] overflow-y-auto pr-1"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- =========================================================== -->
+            <!-- VISTA 3 (EXCLUSIVA ADMIN): SOLICITUDES, DAÑOS Y SALONES     -->
+            <!-- =========================================================== -->
+            <section id="viewAdmin" class="workspace-view hidden space-y-6">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    <!-- Bandeja de Aprobacion de Solicitudes de Reserva (Trainers y Campers) -->
+                    <div class="lg:col-span-7 space-y-6">
+                        <div class="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+                            <h3 class="text-base font-bold text-slate-900">Bandeja de Solicitudes de Reserva (Trainers y Campers)</h3>
+                            <p class="text-xs text-slate-500 mt-1 mb-4">
+                                Autoriza o rechaza las solicitudes de salones y salas de estudio enviadas por Trainers y Campers.
+                            </p>
+                            <div id="listaSolicitudesPendientesAdmin" class="space-y-3"></div>
+                        </div>
+
+                        <!-- Bandeja de Reportes de Daños e Incidencias recibidos en Admin -->
+                        <div class="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+                            <h3 class="text-base font-bold text-slate-900">Bandeja de Reportes de Daños e Incidencias</h3>
+                            <p class="text-xs text-slate-500 mt-1 mb-4">
+                                Reportes de daños y fallas enviados por otros usuarios con clasificación IA. Al aprobar/resolver un daño crítico, el salón se rehabilita automáticamente.
+                            </p>
+                            <div id="listaIncidenciasAdmin" class="space-y-3 max-h-[420px] overflow-y-auto pr-1"></div>
+                        </div>
+                    </div>
+
+                    <!-- Formulario CRUD de Salones y Capacidad -->
+                    <div class="lg:col-span-5 bg-white border border-slate-200 rounded-xl p-6 shadow-sm h-fit">
+                        <h3 class="text-base font-bold text-slate-900">Administración de Salones y Aforo (CRUD)</h3>
+                        <p class="text-xs text-slate-500 mt-1 mb-4">
+                            Crea nuevos espacios o actualiza la capacidad máxima instalada de cualquier salón existente.
+                        </p>
+                        <form id="formCrudSalonAdmin" class="space-y-4">
+                            <input type="hidden" id="adminSalonId">
+                            <div>
+                                <label for="adminSalonNombre" class="block text-xs font-semibold text-slate-700 mb-1">
+                                    Nombre del Espacio <span class="text-red-600">*</span>
+                                </label>
+                                <input type="text" id="adminSalonNombre" required placeholder="Ej. Apolo / Nuevo Laboratorio"
+                                       class="w-full px-3 py-2 rounded-lg bg-white border border-slate-300 text-sm">
+                                <div class="field-error-msg">El nombre del salón es obligatorio.</div>
+                            </div>
+                            <div>
+                                <label for="adminSalonCapacidad" class="block text-xs font-semibold text-slate-700 mb-1">
+                                    Capacidad Máxima (Personas) <span class="text-red-600">*</span>
+                                </label>
+                                <input type="number" id="adminSalonCapacidad" required min="1" placeholder="Ej. 34"
+                                       class="w-full px-3 py-2 rounded-lg bg-white border border-slate-300 text-sm">
+                                <div class="field-error-msg">Ingresa una capacidad válida mayor a 0.</div>
+                            </div>
+                            <div>
+                                <label for="adminSalonImplementos" class="block text-xs font-semibold text-slate-700 mb-1">
+                                    Implementos Instalados
+                                </label>
+                                <input type="text" id="adminSalonImplementos" placeholder="Ej. 1 Televisor con su Cable HDMI"
+                                       class="w-full px-3 py-2 rounded-lg bg-white border border-slate-300 text-sm">
+                            </div>
+                            <div class="flex gap-2">
+                                <button type="submit"
+                                        class="flex-1 py-2.5 px-4 rounded-lg bg-slate-900 hover:bg-slate-800 text-white font-semibold text-sm">
+                                    Guardar Configuración
+                                </button>
+                                <button type="button" id="btnLimpiarSalonAdmin"
+                                        class="py-2.5 px-4 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs">
+                                    Limpiar
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </section>
+
+            <!-- =========================================================== -->
+            <!-- VISTA 4 (EXCLUSIVA SOPORTE): INVENTARIO Y TRIAJE IA         -->
+            <!-- =========================================================== -->
+            <section id="viewSoporte" class="workspace-view hidden space-y-6">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    <!-- Bandeja de Incidencias Priorizada por IA -->
+                    <div class="lg:col-span-6 bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+                        <h3 class="text-base font-bold text-slate-900">Bandeja de Incidencias Priorizada por IA</h3>
+                        <p class="text-xs text-slate-500 mt-1 mb-4">
+                            Tickets clasificados por criticidad (CRÍTICA, MEDIA, BAJA). Al resolver una incidencia crítica, el salón bloqueado se rehabilita automáticamente.
+                        </p>
+                        <div id="listaIncidenciasSoporte" class="space-y-3 max-h-[520px] overflow-y-auto pr-1"></div>
+                    </div>
+
+                    <!-- Inventario Tecnico por Salon -->
+                    <div class="lg:col-span-6 bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+                        <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+                            <div>
+                                <h3 class="text-base font-bold text-slate-900">Inventario Técnico por Salón</h3>
+                                <p class="text-xs text-slate-500 mt-0.5">
+                                    Alterna el estado operativo entre DISPONIBLE y NO DISPONIBLE (Módulo sin préstamos).
+                                </p>
+                            </div>
+                            <select id="soporteSelectSalon"
+                                    class="px-3 py-2 rounded-lg bg-slate-50 border border-slate-300 text-xs font-semibold text-slate-800"></select>
+                        </div>
+                        <div id="tablaInventarioSoporte" class="space-y-2.5 max-h-[480px] overflow-y-auto pr-1"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- =========================================================== -->
+            <!-- VISTA 5 (EXCLUSIVA CAMPER): PRESTAMO INDIVIDUAL Y DEVOLUCION-->
+            <!-- =========================================================== -->
+            <section id="viewCamper" class="workspace-view hidden space-y-6">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    <div class="lg:col-span-5 bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+                        <h3 class="text-base font-bold text-slate-900">Solicitud de Préstamo Individual</h3>
+                        <p class="text-xs text-slate-500 mt-1 mb-4">
+                            Regla de Negocio: Máximo 1 equipo tecnológico activo a la vez por Camper, sin préstamos pendientes de devolución.
+                        </p>
+                        <form id="formPrestamoCamper" class="space-y-4">
+                            <div>
+                                <label for="camperSelectEquipo" class="block text-xs font-semibold text-slate-700 mb-1">
+                                    Recurso Tecnológico <span class="text-red-600">*</span>
+                                </label>
+                                <select id="camperSelectEquipo" required
+                                        class="w-full px-3 py-2 rounded-lg bg-white border border-slate-300 text-sm"></select>
+                            </div>
+                            <div>
+                                <label for="camperCantidadEquipo" class="block text-xs font-semibold text-slate-700 mb-1">
+                                    Unidades Solicitadas <span class="text-red-600">*</span>
+                                </label>
+                                <input type="number" id="camperCantidadEquipo" value="1" min="1" required
+                                       class="w-full px-3 py-2 rounded-lg bg-white border border-slate-300 text-sm">
+                                <div class="field-error-msg">Ingresa una cantidad válida.</div>
+                            </div>
+                            <button type="submit"
+                                    class="w-full py-2.5 px-4 rounded-lg bg-slate-900 hover:bg-slate-800 text-white font-semibold text-sm">
+                                Solicitar Préstamo
+                            </button>
+                        </form>
+                    </div>
+
+                    <div class="lg:col-span-7 bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+                        <h3 class="text-base font-bold text-slate-900">Control de Mis Préstamos y Devoluciones</h3>
+                        <p class="text-xs text-slate-500 mt-1 mb-4">
+                            Registra la devolución de tu recurso activo para habilitar nuevas solicitudes.
+                        </p>
+                        <div id="listaPrestamosCamper" class="space-y-3"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- =========================================================== -->
+            <!-- VISTA 6: REPORTE DE INCIDENCIAS Y COPILOTO GENERAL IA       -->
+            <!-- =========================================================== -->
+            <section id="viewIa" class="workspace-view hidden space-y-6">
+                <!-- Reporte de Incidencia con Triaje Automatico -->
+                <div id="bloqueReporteIncidencia" class="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+                    <h3 class="text-base font-bold text-slate-900">Reporte de Incidencias con Triaje Automático IA</h3>
+                    <p class="text-xs text-slate-500 mt-1 mb-4">
+                        Describe el incidente en lenguaje natural. El motor de IA clasificará la categoría y prioridad (BAJA, MEDIA, CRÍTICA) y bloqueará preventivamente el salón si detecta riesgo crítico.
+                    </p>
+                    <form id="formReportarIncidencia" class="grid grid-cols-1 md:grid-cols-12 gap-3">
+                        <div class="md:col-span-3">
+                            <label for="incidenciaSalon" class="block text-xs font-semibold text-slate-700 mb-1">Salón Asociado</label>
+                            <select id="incidenciaSalon" class="w-full px-3 py-2.5 rounded-lg bg-white border border-slate-300 text-sm"></select>
+                        </div>
+                        <div class="md:col-span-7">
+                            <label for="incidenciaDescripcion" class="block text-xs font-semibold text-slate-700 mb-1">
+                                Descripción del Incidente <span class="text-red-600">*</span>
+                            </label>
+                            <input type="text" id="incidenciaDescripcion" required
+                                   placeholder="Ej. En el salón Apolo huele a quemado y los equipos no encienden..."
+                                   class="w-full px-3.5 py-2.5 rounded-lg bg-white border border-slate-300 text-sm">
+                            <div class="field-error-msg">Describe el incidente para realizar el triaje.</div>
+                        </div>
+                        <div class="md:col-span-2 flex items-end">
+                            <button type="submit"
+                                    class="w-full py-2.5 px-4 rounded-lg bg-slate-900 hover:bg-slate-800 text-white font-semibold text-sm">
+                                Procesar con IA
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Apartado General de Consultas Operativas con IA -->
+                <div class="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="text-base font-bold text-slate-900">Consultas Operativas y Recomendaciones</h3>
+                        <span class="px-2.5 py-1 rounded-md bg-blue-50 text-blue-700 border border-blue-200 text-xs font-semibold">
+                            En tiempo real
+                        </span>
+                    </div>
+                    <p class="text-xs text-slate-500 mb-4">
+                        Realiza consultas sobre disponibilidad de salones, inventario técnico, criterios de asignación o estado de incidencias.
+                    </p>
+                    <form id="formConsultaGeneralIa" class="flex flex-col sm:flex-row gap-3">
+                        <div class="flex-1">
+                            <input type="text" id="inputPreguntaGeneralIa" required
+                                   placeholder="Ej. ¿Qué salón recomiendas para 23 campers y qué implementos incluye?"
+                                   class="w-full px-3.5 py-2.5 rounded-lg bg-white border border-slate-300 text-sm">
+                            <div class="field-error-msg">Escribe una consulta para el asistente operativo.</div>
+                        </div>
+                        <button type="submit"
+                                class="py-2.5 px-5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm shrink-0">
+                            Consultar al Copiloto IA
+                        </button>
+                    </form>
+                    <pre id="respuestaGeneralIa" class="hidden mt-4 p-4 rounded-xl bg-slate-900 text-slate-100 text-xs leading-relaxed whitespace-pre-wrap font-mono"></pre>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>
