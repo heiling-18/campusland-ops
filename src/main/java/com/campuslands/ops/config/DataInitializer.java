@@ -14,17 +14,61 @@ public class DataInitializer implements CommandLineRunner {
     private final UsuarioRepository usuarioRepository;
     private final EspacioRepository espacioRepository;
     private final ImplementoRepository implementoRepository;
+    private final ReservaRepository reservaRepository;
+    private final PrestamoRepository prestamoRepository;
+    private final IncidenciaRepository incidenciaRepository;
 
     public DataInitializer(UsuarioRepository usuarioRepository,
                            EspacioRepository espacioRepository,
-                           ImplementoRepository implementoRepository) {
+                           ImplementoRepository implementoRepository,
+                           ReservaRepository reservaRepository,
+                           PrestamoRepository prestamoRepository,
+                           IncidenciaRepository incidenciaRepository) {
         this.usuarioRepository = usuarioRepository;
         this.espacioRepository = espacioRepository;
         this.implementoRepository = implementoRepository;
+        this.reservaRepository = reservaRepository;
+        this.prestamoRepository = prestamoRepository;
+        this.incidenciaRepository = incidenciaRepository;
     }
 
     @Override
     public void run(String... args) {
+        java.io.File cleanMarker = new java.io.File("data/.clean_initial_v1.done");
+        if (!cleanMarker.exists()) {
+            reservaRepository.deleteAll();
+            prestamoRepository.deleteAll();
+            incidenciaRepository.deleteAll();
+
+            List<Espacio> espaciosExistentes = espacioRepository.findAll();
+            for (Espacio esp : espaciosExistentes) {
+                esp.setEstado("DISPONIBLE");
+                esp.setMotivoBloqueo(null);
+                esp.setOrigenBloqueo(null);
+            }
+            if (!espaciosExistentes.isEmpty()) {
+                espacioRepository.saveAll(espaciosExistentes);
+            }
+
+            List<Implemento> implementosExistentes = implementoRepository.findAll();
+            for (Implemento imp : implementosExistentes) {
+                imp.setEstado("DISPONIBLE");
+                imp.setPrestadoActualmente(false);
+                imp.setMotivoInhabilitado(null);
+            }
+            if (!implementosExistentes.isEmpty()) {
+                implementoRepository.saveAll(implementosExistentes);
+            }
+
+            try {
+                if (cleanMarker.getParentFile() != null) {
+                    cleanMarker.getParentFile().mkdirs();
+                }
+                cleanMarker.createNewFile();
+            } catch (Exception ignored) {
+            }
+        }
+
         if (usuarioRepository.count() == 0) {
             cargarUsuariosOficiales();
         }

@@ -17,6 +17,7 @@ import {
     inicializarModuloCamper
 } from './modules/camperModule.js';
 import { inicializarModuloIa } from './modules/iaModule.js';
+import { inicializarEfectos3D } from './modules/fx3dModule.js';
 
 let usuarioActual = null;
 
@@ -27,6 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     initFormValidationBridge(document);
     inicializarTemaVisual();
+    inicializarEfectos3D();
 
     document.getElementById('loginForm').addEventListener('submit', iniciarSesion);
 
