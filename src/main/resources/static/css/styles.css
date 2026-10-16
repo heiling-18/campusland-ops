@@ -270,3 +270,29 @@ textarea.user-invalid-fallback + .field-error-msg {
 :root:has(> head > meta[name="color-scheme"][content="light"]) .theme-icon-moon {
     display: inline-flex;
 }
+
+/* Login Portal Grid & Card Glow */
+.login-grid-backdrop {
+    background-size: 36px 36px;
+    background-image:
+        linear-gradient(to right, rgba(148, 163, 184, 0.08) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(148, 163, 184, 0.08) 1px, transparent 1px);
+    mask-image: radial-gradient(ellipse at center, black 45%, transparent 85%);
+}
+
+:root:has(> head > meta[name="color-scheme"][content="dark"]) .login-card-shell {
+    background-color: rgba(11, 18, 33, 0.90) !important;
+    border-color: rgba(56, 189, 248, 0.28) !important;
+    box-shadow:
+        0 25px 60px -15px rgba(2, 6, 23, 0.85),
+        0 0 40px -10px rgba(37, 99, 235, 0.28) !important;
+}
+
+:root:has(> head > meta[name="color-scheme"][content="light"]) .login-card-shell {
+    background-color: rgba(255, 255, 255, 0.94) !important;
+    border-color: rgba(37, 99, 235, 0.18) !important;
+    box-shadow:
+        0 25px 50px -12px rgba(15, 23, 42, 0.12),
+        0 0 35px -10px rgba(37, 99, 235, 0.15) !important;
+}
+
