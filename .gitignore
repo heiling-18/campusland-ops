@@ -1,0 +1,13 @@
+# Compilación y entorno — nunca versionar secretos ni bases locales
+target/
+.env
+*.env
+!.env.example
+.idea/
+.vscode/
+*.iml
+*.log
+.DS_Store
+data/
+*.mv.db
+*.trace.db
